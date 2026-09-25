@@ -4,20 +4,18 @@ import re
 import json
 import os
 import difflib
-import torch
 import soundfile as sf
 import numpy as np
 from difflib import SequenceMatcher
 from fastapi import FastAPI, UploadFile, File, Form
 from fastapi.middleware.cors import CORSMiddleware
-from transformers import Wav2Vec2Processor, Wav2Vec2ForCTC
+from transformers import Wav2Vec2Processor
+from huggingface_hub import hf_hub_download
+import onnxruntime as ort
 import uvicorn
 import eng_to_ipa as ipa_engine
 
-# 🟢 Render 512MB Free RAM ke liye single-thread CPU execution
-torch.set_num_threads(1)
-
-app = FastAPI(title="Local Phonetics & Carrier Framing Engine")
+app = FastAPI(title="Ultra-Light ONNX Phonetics Engine")
 
 app.add_middleware(
     CORSMiddleware,
@@ -28,18 +26,17 @@ app.add_middleware(
 )
 
 MODEL_ID = "facebook/wav2vec2-base-960h"
-print("AI model load ho raha hai (Optimized CPU Mode)...", flush=True)
-
+print("AI प्रोसेसर लोड हो रहा है...", flush=True)
 processor = Wav2Vec2Processor.from_pretrained(MODEL_ID)
-raw_model = Wav2Vec2ForCTC.from_pretrained(MODEL_ID)
-raw_model.eval()
 
-# ⚡ Dynamic 8-bit Quantization: RAM usage ~800MB se ghat kar ~180MB ho jayega
-model = torch.quantization.quantize_dynamic(
-    raw_model, {torch.nn.Linear}, dtype=torch.qint8
-)
-del raw_model  # Uncompressed heavy model memory se turant free karein
-print("AI model safaltapurvak load ho gaya (RAM under 200MB)!", flush=True)
+# ⚡ Lightweight ONNX CPU Engine (~90MB RAM)
+onnx_path = hf_hub_download(repo_id="optimum/wav2vec2-base-960h", filename="model.onnx")
+
+sess_options = ort.SessionOptions()
+sess_options.intra_op_num_threads = 1
+sess_options.inter_op_num_threads = 1
+ort_session = ort.InferenceSession(onnx_path, sess_options, providers=['CPUExecutionProvider'])
+print("[SUCCESS] AI मॉडल ONNX मोड में लोड हो गया (RAM under 150MB)!", flush=True)
 
 JSON_PATH = os.path.join(os.path.dirname(__file__), "phonetics_rules.json")
 CUSTOM_RULES = {}
@@ -65,11 +62,11 @@ def load_rules_from_json():
                             "wrong": raw_wrongs,
                             "silent_letter": details.get("silent_letter", False)
                         }
-            print(f"[SUCCESS] Kul {len(CUSTOM_RULES)} shabd rules load huye!", flush=True)
+            print(f"[SUCCESS] कुल {len(CUSTOM_RULES)} शब्द रूल्स लोड हुए!", flush=True)
         except Exception as err:
-            print(f"[ERROR] JSON load karne mein truti: {err}", flush=True)
+            print(f"[ERROR] JSON लोड करने में त्रुटि: {err}", flush=True)
     else:
-        print("[WARNING] 'phonetics_rules.json' nahi mili.", flush=True)
+        print("[WARNING] 'phonetics_rules.json' नहीं मिली।", flush=True)
 
 load_rules_from_json()
 
@@ -131,16 +128,14 @@ async def get_drills():
 @app.get("/get-word-ipa")
 async def get_word_ipa(word: str):
     clean_w = word.strip().lower()
-
     if clean_w.upper() in CUSTOM_RULES and CUSTOM_RULES[clean_w.upper()].get("ipa"):
         return {"word": word, "ipa": CUSTOM_RULES[clean_w.upper()]["ipa"]}
-
     generated_ipa = ipa_engine.convert(clean_w)
     return {"word": word, "ipa": f"/{generated_ipa}/"}
 
 def evaluate_word_phonetics(ref_clean: str, spoken_clean: str, next_word: str = "", spectral_ratio: float = 0.0, audio_chunk: np.ndarray = None):
     if not spoken_clean or spoken_clean == "[छूट गया]":
-        return False, "Yeh shabd padhne mein chhoot gaya."
+        return False, "यह शब्द पढ़ने में छूट गया।"
 
     ref_clean = ref_clean.upper().strip()
     spoken_clean = spoken_clean.upper().strip()
@@ -152,24 +147,24 @@ def evaluate_word_phonetics(ref_clean: str, spoken_clean: str, next_word: str = 
     if ref_clean in CUSTOM_RULES:
         rule = CUSTOM_RULES[ref_clean]
         if spoken_clean in rule["wrong"]:
-            return False, f"Truti [{rule['category']}]: {rule['note']}"
+            return False, f"त्रुटि [{rule['category']}]: {rule['note']}"
 
     if any(x in ref_clean for x in ["SH", "TION", "SION", "TIOUS", "TIENT", "CIAL"]):
         if ("S" in spoken_clean and "SH" not in spoken_clean) or s_sh_ratio > 1.35 or spoken_clean.endswith("SAN"):
-            return False, "Dhwani truti: Aapne 'श' (/ʃ/) ki jagah 'स' (/s/) bol diya hai."
+            return False, "ध्वनि त्रुटि: आपने 'श' (/ʃ/) की जगह 'स' (/s/) बोल दिया है।"
 
     if ("Z" in ref_clean or "SE" in ref_clean) and ("J" in spoken_clean or spoken_clean.startswith("G")):
-        return False, "Dhwani truti: 'ज' nahi, gale mein kampan ke saath 'ज़' (/z/) bolein."
+        return False, "ध्वनि त्रुटि: 'ज' नहीं, गले में कम्पन के साथ 'ज़' (/z/) बोलें।"
 
     if ref_clean == "PRONUNCIATION":
         if spoken_clean in ["PRDN", "PRONUNCIASAN", "PRONOUNCIATION"] or spoken_clean.endswith("SAN"):
-            return False, "Dhwani truti: 'प्र-नन-सी-एशन' bolein, 'प्रदन' ya 'सन' nahi."
+            return False, "ध्वनि त्रुटि: 'प्र-नन-सी-एशन' बोलें, 'प्रदन' या 'सन' नहीं।"
 
     similarity = SequenceMatcher(None, ref_clean, spoken_clean).ratio()
     if ref_clean == spoken_clean or similarity >= 0.85:
         return True, ""
 
-    return False, f"Suna gaya: '{spoken_clean}', Sahi shabd: '{ref_clean}'"
+    return False, f"सुना गया: '{spoken_clean}', सही शब्द: '{ref_clean}'"
 
 @app.post("/verify-pronunciation")
 async def verify_pronunciation(
@@ -185,7 +180,7 @@ async def verify_pronunciation(
         return {
             "transcription": "",
             "results": [
-                {"index": idx, "word": ref_word, "is_correct": False, "heard": "[खाली]", "error_detail": "Audio load nahi hua."}
+                {"index": idx, "word": ref_word, "is_correct": False, "heard": "[खाली]", "error_detail": "ऑडियो लोड नहीं हुआ।"}
                 for idx, ref_word in enumerate(ref_tokens)
             ]
         }
@@ -199,7 +194,7 @@ async def verify_pronunciation(
         return {
             "transcription": "",
             "results": [
-                {"index": idx, "word": ref_word, "is_correct": False, "heard": "[खाली]", "error_detail": "Audio bahut chhota tha."}
+                {"index": idx, "word": ref_word, "is_correct": False, "heard": "[खाली]", "error_detail": "ऑडियो बहुत छोटा था।"}
                 for idx, ref_word in enumerate(ref_tokens)
             ]
         }
@@ -212,11 +207,13 @@ async def verify_pronunciation(
     if max_val > 0.01:
         data_padded = (data_padded / max_val) * 0.95
 
-    input_values = processor(data_padded, return_tensors="pt", sampling_rate=16000).input_values
-    with torch.no_grad():
-        logits = model(input_values).logits
+    # ⚡ ONNX Model Inference
+    input_values = processor(data_padded, return_tensors="np", sampling_rate=16000).input_values
+    ort_inputs = {ort_session.get_inputs()[0].name: input_values}
+    ort_outs = ort_session.run(None, ort_inputs)
+    logits = ort_outs[0]
 
-    predicted_ids = torch.argmax(logits, dim=-1)
+    predicted_ids = np.argmax(logits, axis=-1)
     transcription = processor.decode(predicted_ids[0]).strip().upper()
     spoken_tokens = [w for w in re.sub(r'[^A-Z\s]', '', transcription).split() if w]
 
@@ -241,7 +238,7 @@ async def verify_pronunciation(
                 "word": ref_word,
                 "is_correct": False,
                 "heard": "[छूट गया]",
-                "error_detail": "Yeh shabd padhne mein chhoot gaya."
+                "error_detail": "यह शब्द पढ़ने में छूट गया।"
             })
             continue
 
@@ -275,28 +272,31 @@ async def verify_carrier_framed_word(
             data = np.mean(data, axis=1)
         data = resample_to_16k(data, sample_rate)
     except Exception as e:
-        return {"word": target, "is_correct": False, "score": 0, "error_detail": "Audio load nahi hua."}
+        return {"word": target, "is_correct": False, "score": 0, "error_detail": "ऑडियो लोड नहीं हुआ।"}
 
     max_val = np.max(np.abs(data))
     if max_val > 0.01:
         data = (data / max_val) * 0.95
     else:
-        return {"word": target, "is_correct": False, "score": 0, "error_detail": "Aawaz bahut dheemi ya shaant thi."}
+        return {"word": target, "is_correct": False, "score": 0, "error_detail": "आवाज़ बहुत धीमी या शांत थी।"}
 
     pad_samples = int(16000 * 0.25)
     data_padded = np.pad(data, (pad_samples, pad_samples), mode='constant', constant_values=0)
 
-    input_values = processor(data_padded, return_tensors="pt", sampling_rate=16000).input_values
-    with torch.no_grad():
-        logits = model(input_values).logits
-    predicted_ids = torch.argmax(logits, dim=-1)
+    # ⚡ ONNX Model Inference
+    input_values = processor(data_padded, return_tensors="np", sampling_rate=16000).input_values
+    ort_inputs = {ort_session.get_inputs()[0].name: input_values}
+    ort_outs = ort_session.run(None, ort_inputs)
+    logits = ort_outs[0]
+
+    predicted_ids = np.argmax(logits, axis=-1)
     transcription = processor.decode(predicted_ids[0]).strip().upper()
 
     spoken_tokens = [w for w in re.sub(r'[^A-Z\s]', '', transcription).split() if w]
     print(f"\n[CARRIER CHECK] Sentence: '{carrier_sentence}' | Target: '{target}' | Heard: '{transcription}'", flush=True)
 
     if not spoken_tokens:
-        return {"word": target, "is_correct": False, "score": 0, "error_detail": "Koi shabd sunayi nahi diya."}
+        return {"word": target, "is_correct": False, "score": 0, "error_detail": "कोई शब्द सुनाई नहीं दिया।"}
 
     target_idx = -1
     for idx, w in enumerate(carrier_tokens):
@@ -332,7 +332,7 @@ async def verify_carrier_framed_word(
 
     if similarity < 0.80:
         is_valid = False
-        err_msg = f"Suna gaya: '{target_spoken if target_spoken else '[aspasht]'}' | Sahi shabd: '{target}'"
+        err_msg = f"सुना गया: '{target_spoken if target_spoken else '[अस्पष्ट]'}' | सही शब्द: '{target}'"
 
     return {
         "word": target,
