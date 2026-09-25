@@ -10,12 +10,11 @@ import numpy as np
 from difflib import SequenceMatcher
 from fastapi import FastAPI, UploadFile, File, Form
 from fastapi.middleware.cors import CORSMiddleware
-from transformers import Wav2Vec2Processor
 import onnxruntime as ort
 import uvicorn
 import eng_to_ipa as ipa_engine
 
-app = FastAPI(title="Ultra-Light ONNX Phonetics Engine")
+app = FastAPI(title="Ultra-Light Pure ONNX Phonetics Engine")
 
 app.add_middleware(
     CORSMiddleware,
@@ -25,16 +24,30 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-MODEL_ID = "facebook/wav2vec2-base-960h"
-print("AI processor load ho raha hai...", flush=True)
-processor = Wav2Vec2Processor.from_pretrained(MODEL_ID)
+# ⚡ Wav2Vec2 Vocabulary Mapping (बिना transformers के सीधा CTC डिकोडिंग)
+VOCAB = [
+    "<pad>", "<s>", "</s>", "<unk>", "|", "E", "T", "A", "O", "N", "I", "H", "S", 
+    "R", "D", "L", "U", "M", "W", "C", "F", "G", "Y", "P", "B", "V", "K", "'", "X", "J", "Q", "Z"
+]
 
-# ⚡ Direct Model Download (Bypass HuggingFace 401 Auth Error)
+def ctc_decode(predictions):
+    pred_ids = np.argmax(predictions, axis=-1)[0]
+    decoded_chars = []
+    prev_id = -1
+    for p in pred_ids:
+        if p != prev_id and p != 0: # 0 is <pad>
+            if p < len(VOCAB):
+                char = VOCAB[p]
+                decoded_chars.append(" " if char == "|" else char)
+        prev_id = p
+    return "".join(decoded_chars).strip()
+
+# ⚡ Direct Lightweight ONNX Model Download (~95MB)
 ONNX_FILE = os.path.join(os.path.dirname(__file__), "wav2vec2_model.onnx")
 ONNX_URL = "https://huggingface.co/Xenova/wav2vec2-base-960h/resolve/main/onnx/model_quantized.onnx"
 
 if not os.path.exists(ONNX_FILE):
-    print("Pre-quantized ONNX model download ho raha hai (~95MB)...", flush=True)
+    print("Pre-quantized ONNX model download ho raha hai...", flush=True)
     urllib.request.urlretrieve(ONNX_URL, ONNX_FILE)
     print("Download complete!", flush=True)
 
@@ -42,7 +55,7 @@ sess_options = ort.SessionOptions()
 sess_options.intra_op_num_threads = 1
 sess_options.inter_op_num_threads = 1
 ort_session = ort.InferenceSession(ONNX_FILE, sess_options, providers=['CPUExecutionProvider'])
-print("[SUCCESS] AI ONNX Model safaltapurvak load hua (RAM under 120MB)!", flush=True)
+print("[SUCCESS] Pure ONNX Engine Safaltapurvak Load Hua (RAM under 100MB)!", flush=True)
 
 JSON_PATH = os.path.join(os.path.dirname(__file__), "phonetics_rules.json")
 CUSTOM_RULES = {}
@@ -213,14 +226,13 @@ async def verify_pronunciation(
     if max_val > 0.01:
         data_padded = (data_padded / max_val) * 0.95
 
-    # ⚡ ONNX Inference
-    input_values = processor(data_padded, return_tensors="np", sampling_rate=16000).input_values
+    # ⚡ Pure ONNX Inference (No transformers overhead)
+    input_values = np.expand_dims(data_padded.astype(np.float32), axis=0)
     ort_inputs = {ort_session.get_inputs()[0].name: input_values}
     ort_outs = ort_session.run(None, ort_inputs)
     logits = ort_outs[0]
 
-    predicted_ids = np.argmax(logits, axis=-1)
-    transcription = processor.decode(predicted_ids[0]).strip().upper()
+    transcription = ctc_decode(logits).upper()
     spoken_tokens = [w for w in re.sub(r'[^A-Z\s]', '', transcription).split() if w]
 
     print(f"\n[ACOUSTIC LOG] Target: '{reference_text}' | Heard: '{transcription}'", flush=True)
@@ -289,15 +301,12 @@ async def verify_carrier_framed_word(
     pad_samples = int(16000 * 0.25)
     data_padded = np.pad(data, (pad_samples, pad_samples), mode='constant', constant_values=0)
 
-    # ⚡ ONNX Inference
-    input_values = processor(data_padded, return_tensors="np", sampling_rate=16000).input_values
+    input_values = np.expand_dims(data_padded.astype(np.float32), axis=0)
     ort_inputs = {ort_session.get_inputs()[0].name: input_values}
     ort_outs = ort_session.run(None, ort_inputs)
     logits = ort_outs[0]
 
-    predicted_ids = np.argmax(logits, axis=-1)
-    transcription = processor.decode(predicted_ids[0]).strip().upper()
-
+    transcription = ctc_decode(logits).upper()
     spoken_tokens = [w for w in re.sub(r'[^A-Z\s]', '', transcription).split() if w]
     print(f"\n[CARRIER CHECK] Sentence: '{carrier_sentence}' | Target: '{target}' | Heard: '{transcription}'", flush=True)
 
