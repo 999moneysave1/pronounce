@@ -1,10 +1,10 @@
 --extra-index-url https://download.pytorch.org/whl/cpu
-torch==2.2.0+cpu
-torchaudio==2.2.0+cpu
-transformers==4.38.2
+torch
+torchaudio
+transformers
 fastapi
 uvicorn
 soundfile
-numpy<2.0.0
+numpy
 python-multipart
 eng-to-ipa
