@@ -1,9 +1,8 @@
---extra-index-url https://download.pytorch.org/whl/cpu
-torch
-torchaudio
-transformers
 fastapi
 uvicorn
+onnxruntime
+transformers
+huggingface_hub
 soundfile
 numpy
 python-multipart
