@@ -4,13 +4,13 @@ import re
 import json
 import os
 import difflib
+import urllib.request
 import soundfile as sf
 import numpy as np
 from difflib import SequenceMatcher
 from fastapi import FastAPI, UploadFile, File, Form
 from fastapi.middleware.cors import CORSMiddleware
 from transformers import Wav2Vec2Processor
-from huggingface_hub import hf_hub_download
 import onnxruntime as ort
 import uvicorn
 import eng_to_ipa as ipa_engine
@@ -26,17 +26,23 @@ app.add_middleware(
 )
 
 MODEL_ID = "facebook/wav2vec2-base-960h"
-print("AI प्रोसेसर लोड हो रहा है...", flush=True)
+print("AI processor load ho raha hai...", flush=True)
 processor = Wav2Vec2Processor.from_pretrained(MODEL_ID)
 
-# ⚡ Lightweight ONNX CPU Engine (~90MB RAM)
-onnx_path = hf_hub_download(repo_id="optimum/wav2vec2-base-960h", filename="model.onnx")
+# ⚡ Direct Model Download (Bypass HuggingFace 401 Auth Error)
+ONNX_FILE = os.path.join(os.path.dirname(__file__), "wav2vec2_model.onnx")
+ONNX_URL = "https://huggingface.co/Xenova/wav2vec2-base-960h/resolve/main/onnx/model_quantized.onnx"
+
+if not os.path.exists(ONNX_FILE):
+    print("Pre-quantized ONNX model download ho raha hai (~95MB)...", flush=True)
+    urllib.request.urlretrieve(ONNX_URL, ONNX_FILE)
+    print("Download complete!", flush=True)
 
 sess_options = ort.SessionOptions()
 sess_options.intra_op_num_threads = 1
 sess_options.inter_op_num_threads = 1
-ort_session = ort.InferenceSession(onnx_path, sess_options, providers=['CPUExecutionProvider'])
-print("[SUCCESS] AI मॉडल ONNX मोड में लोड हो गया (RAM under 150MB)!", flush=True)
+ort_session = ort.InferenceSession(ONNX_FILE, sess_options, providers=['CPUExecutionProvider'])
+print("[SUCCESS] AI ONNX Model safaltapurvak load hua (RAM under 120MB)!", flush=True)
 
 JSON_PATH = os.path.join(os.path.dirname(__file__), "phonetics_rules.json")
 CUSTOM_RULES = {}
@@ -62,11 +68,11 @@ def load_rules_from_json():
                             "wrong": raw_wrongs,
                             "silent_letter": details.get("silent_letter", False)
                         }
-            print(f"[SUCCESS] कुल {len(CUSTOM_RULES)} शब्द रूल्स लोड हुए!", flush=True)
+            print(f"[SUCCESS] Kul {len(CUSTOM_RULES)} rules load huye!", flush=True)
         except Exception as err:
-            print(f"[ERROR] JSON लोड करने में त्रुटि: {err}", flush=True)
+            print(f"[ERROR] JSON error: {err}", flush=True)
     else:
-        print("[WARNING] 'phonetics_rules.json' नहीं मिली।", flush=True)
+        print("[WARNING] 'phonetics_rules.json' nahi mili.", flush=True)
 
 load_rules_from_json()
 
@@ -207,7 +213,7 @@ async def verify_pronunciation(
     if max_val > 0.01:
         data_padded = (data_padded / max_val) * 0.95
 
-    # ⚡ ONNX Model Inference
+    # ⚡ ONNX Inference
     input_values = processor(data_padded, return_tensors="np", sampling_rate=16000).input_values
     ort_inputs = {ort_session.get_inputs()[0].name: input_values}
     ort_outs = ort_session.run(None, ort_inputs)
@@ -283,7 +289,7 @@ async def verify_carrier_framed_word(
     pad_samples = int(16000 * 0.25)
     data_padded = np.pad(data, (pad_samples, pad_samples), mode='constant', constant_values=0)
 
-    # ⚡ ONNX Model Inference
+    # ⚡ ONNX Inference
     input_values = processor(data_padded, return_tensors="np", sampling_rate=16000).input_values
     ort_inputs = {ort_session.get_inputs()[0].name: input_values}
     ort_outs = ort_session.run(None, ort_inputs)
