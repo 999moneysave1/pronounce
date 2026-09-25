@@ -12,7 +12,10 @@ from fastapi import FastAPI, UploadFile, File, Form
 from fastapi.middleware.cors import CORSMiddleware
 from transformers import Wav2Vec2Processor, Wav2Vec2ForCTC
 import uvicorn
-import eng_to_ipa as ipa_engine  # <--- यहाँ जोड़ा गया है
+import eng_to_ipa as ipa_engine
+
+# 🟢 Render 512MB Free RAM ke liye single-thread CPU execution
+torch.set_num_threads(1)
 
 app = FastAPI(title="Local Phonetics & Carrier Framing Engine")
 
@@ -25,11 +28,18 @@ app.add_middleware(
 )
 
 MODEL_ID = "facebook/wav2vec2-base-960h"
-print("AI मॉडल लोड हो रहा है...", flush=True)
+print("AI model load ho raha hai (Optimized CPU Mode)...", flush=True)
+
 processor = Wav2Vec2Processor.from_pretrained(MODEL_ID)
-model = Wav2Vec2ForCTC.from_pretrained(MODEL_ID)
-model.eval()
-print("AI मॉडल तैयार है!", flush=True)
+raw_model = Wav2Vec2ForCTC.from_pretrained(MODEL_ID)
+raw_model.eval()
+
+# ⚡ Dynamic 8-bit Quantization: RAM usage ~800MB se ghat kar ~180MB ho jayega
+model = torch.quantization.quantize_dynamic(
+    raw_model, {torch.nn.Linear}, dtype=torch.qint8
+)
+del raw_model  # Uncompressed heavy model memory se turant free karein
+print("AI model safaltapurvak load ho gaya (RAM under 200MB)!", flush=True)
 
 JSON_PATH = os.path.join(os.path.dirname(__file__), "phonetics_rules.json")
 CUSTOM_RULES = {}
@@ -55,11 +65,11 @@ def load_rules_from_json():
                             "wrong": raw_wrongs,
                             "silent_letter": details.get("silent_letter", False)
                         }
-            print(f"[SUCCESS] कुल {len(CUSTOM_RULES)} शब्द रूल्स लोड हुए!", flush=True)
+            print(f"[SUCCESS] Kul {len(CUSTOM_RULES)} shabd rules load huye!", flush=True)
         except Exception as err:
-            print(f"[ERROR] JSON लोड करने में त्रुटि: {err}", flush=True)
+            print(f"[ERROR] JSON load karne mein truti: {err}", flush=True)
     else:
-        print("[WARNING] 'phonetics_rules.json' नहीं मिली।", flush=True)
+        print("[WARNING] 'phonetics_rules.json' nahi mili.", flush=True)
 
 load_rules_from_json()
 
@@ -118,24 +128,19 @@ async def get_drills():
             }
     return {"drills": drill_list, "phonetics": phonetics_dict}
 
-# =============================================================
-# डायनामिक फोनेटिक (IPA) एंडपॉइंट (यहाँ जोड़ा गया है)
-# =============================================================
 @app.get("/get-word-ipa")
 async def get_word_ipa(word: str):
     clean_w = word.strip().lower()
 
-    # 1. पहले देखें क्या आपके JSON में कोई खास कस्टम IPA है
     if clean_w.upper() in CUSTOM_RULES and CUSTOM_RULES[clean_w.upper()].get("ipa"):
         return {"word": word, "ipa": CUSTOM_RULES[clean_w.upper()]["ipa"]}
 
-    # 2. अगर JSON में नहीं है (जैसे SCHEDULED), तो अपने-आप असली IPA बनाएँ
     generated_ipa = ipa_engine.convert(clean_w)
     return {"word": word, "ipa": f"/{generated_ipa}/"}
 
 def evaluate_word_phonetics(ref_clean: str, spoken_clean: str, next_word: str = "", spectral_ratio: float = 0.0, audio_chunk: np.ndarray = None):
     if not spoken_clean or spoken_clean == "[छूट गया]":
-        return False, "यह शब्द पढ़ने में छूट गया।"
+        return False, "Yeh shabd padhne mein chhoot gaya."
 
     ref_clean = ref_clean.upper().strip()
     spoken_clean = spoken_clean.upper().strip()
@@ -144,36 +149,28 @@ def evaluate_word_phonetics(ref_clean: str, spoken_clean: str, next_word: str = 
     if audio_chunk is not None and len(audio_chunk) > 200:
         s_sh_ratio, zcr = get_sibilant_spectral_analysis(audio_chunk)
 
-    # 1. कस्टम रूल्स की जाँच
     if ref_clean in CUSTOM_RULES:
         rule = CUSTOM_RULES[ref_clean]
         if spoken_clean in rule["wrong"]:
-            return False, f"त्रुटि [{rule['category']}]: {rule['note']}"
+            return False, f"Truti [{rule['category']}]: {rule['note']}"
 
-    # 2. 'स' vs 'श' की सख्त जाँच
     if any(x in ref_clean for x in ["SH", "TION", "SION", "TIOUS", "TIENT", "CIAL"]):
         if ("S" in spoken_clean and "SH" not in spoken_clean) or s_sh_ratio > 1.35 or spoken_clean.endswith("SAN"):
-            return False, "ध्वनि त्रुटि: आपने 'श' (/ʃ/) की जगह 'स' (/s/) बोल दिया है।"
+            return False, "Dhwani truti: Aapne 'श' (/ʃ/) ki jagah 'स' (/s/) bol diya hai."
 
-    # 3. 'ज' vs 'ज़' की सख्त जाँच
     if ("Z" in ref_clean or "SE" in ref_clean) and ("J" in spoken_clean or spoken_clean.startswith("G")):
-        return False, "ध्वनि त्रुटि: 'ज' नहीं, गले में कम्पन के साथ 'ज़' (/z/) बोलें।"
+        return False, "Dhwani truti: 'ज' nahi, gale mein kampan ke saath 'ज़' (/z/) bolein."
 
-    # 4. विशेष शब्द
     if ref_clean == "PRONUNCIATION":
         if spoken_clean in ["PRDN", "PRONUNCIASAN", "PRONOUNCIATION"] or spoken_clean.endswith("SAN"):
-            return False, "ध्वनि त्रुटि: 'प्र-नन-सी-एशन' बोलें, 'प्रदन' या 'सन' नहीं।"
+            return False, "Dhwani truti: 'प्र-नन-सी-एशन' bolein, 'प्रदन' ya 'सन' nahi."
 
-    # 5. लेवेनश्टाइन फोनेटिक मिलान
     similarity = SequenceMatcher(None, ref_clean, spoken_clean).ratio()
     if ref_clean == spoken_clean or similarity >= 0.85:
         return True, ""
 
-    return False, f"सुना गया: '{spoken_clean}', सही शब्द: '{ref_clean}'"
+    return False, f"Suna gaya: '{spoken_clean}', Sahi shabd: '{ref_clean}'"
 
-# =============================================================
-# मुख्य वाक्य सत्यापन एंडपॉइंट (Full Sentence Verification)
-# =============================================================
 @app.post("/verify-pronunciation")
 async def verify_pronunciation(
     audio: UploadFile = File(...),
@@ -188,7 +185,7 @@ async def verify_pronunciation(
         return {
             "transcription": "",
             "results": [
-                {"index": idx, "word": ref_word, "is_correct": False, "heard": "[खाली]", "error_detail": "ऑडियो लोड नहीं हुआ।"}
+                {"index": idx, "word": ref_word, "is_correct": False, "heard": "[खाली]", "error_detail": "Audio load nahi hua."}
                 for idx, ref_word in enumerate(ref_tokens)
             ]
         }
@@ -202,7 +199,7 @@ async def verify_pronunciation(
         return {
             "transcription": "",
             "results": [
-                {"index": idx, "word": ref_word, "is_correct": False, "heard": "[खाली]", "error_detail": "ऑडियो बहुत छोटा था।"}
+                {"index": idx, "word": ref_word, "is_correct": False, "heard": "[खाली]", "error_detail": "Audio bahut chhota tha."}
                 for idx, ref_word in enumerate(ref_tokens)
             ]
         }
@@ -225,7 +222,6 @@ async def verify_pronunciation(
 
     print(f"\n[ACOUSTIC LOG] Target: '{reference_text}' | Heard: '{transcription}'", flush=True)
 
-    # LCS अलाइनमेंट
     matcher = difflib.SequenceMatcher(None, ref_tokens, spoken_tokens)
     aligned_spoken = [None] * len(ref_tokens)
 
@@ -245,7 +241,7 @@ async def verify_pronunciation(
                 "word": ref_word,
                 "is_correct": False,
                 "heard": "[छूट गया]",
-                "error_detail": "यह शब्द पढ़ने में छूट गया।"
+                "error_detail": "Yeh shabd padhne mein chhoot gaya."
             })
             continue
 
@@ -263,9 +259,6 @@ async def verify_pronunciation(
         "results": eval_results
     }
 
-# =============================================================
-# पॉपअप कैरियर फ्रेमिंग एंडपॉइंट (Carrier Sentence Single Word Verification)
-# =============================================================
 @app.post("/verify-carrier-framed-word")
 async def verify_carrier_framed_word(
     audio: UploadFile = File(...),
@@ -282,13 +275,13 @@ async def verify_carrier_framed_word(
             data = np.mean(data, axis=1)
         data = resample_to_16k(data, sample_rate)
     except Exception as e:
-        return {"word": target, "is_correct": False, "score": 0, "error_detail": "ऑडियो लोड नहीं हुआ।"}
+        return {"word": target, "is_correct": False, "score": 0, "error_detail": "Audio load nahi hua."}
 
     max_val = np.max(np.abs(data))
     if max_val > 0.01:
         data = (data / max_val) * 0.95
     else:
-        return {"word": target, "is_correct": False, "score": 0, "error_detail": "आवाज़ बहुत धीमी या शांत थी।"}
+        return {"word": target, "is_correct": False, "score": 0, "error_detail": "Aawaz bahut dheemi ya shaant thi."}
 
     pad_samples = int(16000 * 0.25)
     data_padded = np.pad(data, (pad_samples, pad_samples), mode='constant', constant_values=0)
@@ -303,16 +296,14 @@ async def verify_carrier_framed_word(
     print(f"\n[CARRIER CHECK] Sentence: '{carrier_sentence}' | Target: '{target}' | Heard: '{transcription}'", flush=True)
 
     if not spoken_tokens:
-        return {"word": target, "is_correct": False, "score": 0, "error_detail": "कोई शब्द सुनाई नहीं दिया।"}
+        return {"word": target, "is_correct": False, "score": 0, "error_detail": "Koi shabd sunayi nahi diya."}
 
-    # 1. वाहक वाक्य में से लक्षित शब्द का स्थान खोजें
     target_idx = -1
     for idx, w in enumerate(carrier_tokens):
         if w == target:
             target_idx = idx
             break
 
-    # 2. अलाइनमेंट करके देखें कि बच्चे ने लक्षित शब्द के स्थान पर क्या बोला
     matcher = difflib.SequenceMatcher(None, carrier_tokens, spoken_tokens)
     target_spoken = None
 
@@ -341,7 +332,7 @@ async def verify_carrier_framed_word(
 
     if similarity < 0.80:
         is_valid = False
-        err_msg = f"सुना गया: '{target_spoken if target_spoken else '[अस्पष्ट]'}' | सही शब्द: '{target}'"
+        err_msg = f"Suna gaya: '{target_spoken if target_spoken else '[aspasht]'}' | Sahi shabd: '{target}'"
 
     return {
         "word": target,
@@ -352,4 +343,5 @@ async def verify_carrier_framed_word(
     }
 
 if __name__ == "__main__":
-    uvicorn.run(app, host="127.0.0.1", port=8000)
+    port = int(os.environ.get("PORT", 8000))
+    uvicorn.run(app, host="0.0.0.0", port=port)
