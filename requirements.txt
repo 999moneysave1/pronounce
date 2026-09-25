@@ -1,0 +1,8 @@
+fastapi
+uvicorn
+torch
+transformers
+soundfile
+numpy
+python-multipart
+eng-to-ipa

@@ -1,0 +1,290 @@
+{
+  "categories": [
+    {
+      "id": "CONSONANT_MERGING_AND_GEMINATES",
+      "name": "Identical Consonant Merging (Bus Stop, Black Cat, Bad Dog)",
+      "drill_sentence": "He waited at the bus stop with a black cat and a bad dog until next time when we help people find this street.",
+      "rule": "Jab ek shabd usi sound par khatam ho jisse agla shabd shuru hota hai (S+S, K+K, D+D, T+T, P+P), toh beech mein pause na lein aur sound ko do baar alag-alag na bolein; ek hi continuous dhwani se agle shabd par blend karein.",
+      "words": {
+        "BUS": {
+          "ipa": "/bʌs/",
+          "note": "<strong>S+S Rule (Bus Stop):</strong> 'Bus' aur 'Stop' dono mein 'S' hai[cite: 16]। 'बस... स्टॉप' alag-alag na bolein, ek lambi 'S' sound ke saath <strong>'बस्टॉप' (/bʌstɒp/)</strong> blend karein[cite: 16]।"
+        },
+        "STOP": {
+          "ipa": "/stɒp/",
+          "note": "<strong>S+S Merging:</strong> 'Stop' ko 'इस्टॉप' ya 'स-स्टॉप' na kahein, 'bus' ke 'S' ke saath smooth jodein[cite: 16]।"
+        },
+        "BLACK": {
+          "ipa": "/blæk/",
+          "note": "<strong>K+C Rule (Black Cat):</strong> 'Black' ka 'K' aur 'Cat' ka 'C' ek hi sound (/k/) hain[cite: 16]। 'ब्लैक... कैट' do baar 'K' na bole, ek hold ke saath <strong>'ब्लै-कैट' (/blækæt/)</strong> bolein[cite: 16]।"
+        },
+        "CAT": {
+          "ipa": "/kæt/",
+          "note": "<strong>K+C Merging:</strong> Jaw drop karke /æ/ sound bolein (कैट), 'ब्लैक' ke turant baad bina pause ke[cite: 16]।"
+        },
+        "BAD": {
+          "ipa": "/bæd/",
+          "note": "<strong>D+D Rule (Bad Dog):</strong> 'Bad' ka 'D' aur 'Dog' ka 'D' milkar ek single sustained 'D' banega[cite: 16]। 'बैड... डॉग' ruk kar na kahein, <strong>'बै-डॉग' (/bædɒɡ/)</strong> bolein[cite: 16]।"
+        },
+        "DOG": {
+          "ipa": "/dɒɡ/",
+          "note": "<strong>D+D Hold:</strong> Tongue tip ko upper palate par rakhein aur single release se 'डॉग' bolein[cite: 16]।"
+        },
+        "NEXT": {
+          "ipa": "/nɛkst/",
+          "note": "<strong>T+T Rule (Next Time):</strong> 'Next' ka antim 'T' aur 'Time' ka initial 'T' merge honge[cite: 16]। 'नेक्स्ट... टाइम' ke bajay <strong>'नेक्स-टाइम' (/nɛkstaɪm/)</strong> flow karein[cite: 16]।"
+        },
+        "TIME": {
+          "ipa": "/taɪm/",
+          "note": "<strong>T+T Release:</strong> 'Next' ke baad bina double gap ke directly release karein[cite: 16]।"
+        },
+        "HELP": {
+          "ipa": "/hɛlp/",
+          "note": "<strong>P+P Rule (Help People):</strong> 'Help' aur 'People' dono 'P' se judte hain[cite: 16]। Honth band karke single explosive release se <strong>'हेल-पीपल' (/hɛlpiːpəl/)</strong> bolein[cite: 16]।"
+        },
+        "PEOPLE": {
+          "ipa": "/ˈpiː.pəl/",
+          "note": "<strong>P+P Linking:</strong> First syllable 'PEE' ko smoothly connect karein[cite: 16]।"
+        },
+        "THIS": {
+          "ipa": "/ðɪs/",
+          "note": "<strong>S+S Rule (This Street):</strong> 'This' ka 'S' aur 'Street' ka 'S' merge hokar continuous /s/ banega[cite: 16]। 'दिस... स्ट्रीट' na rokein, <strong>'दि-स्ट्रीट' (/ðɪstriːt/)</strong> bolein[cite: 16]।"
+        },
+        "STREET": {
+          "ipa": "/striːt/",
+          "note": "<strong>S+S Blending:</strong> 'Street' ko 'इस-ट्रीट' na bolein, 'this' ke 'S' se hi shuru karein[cite: 16]।"
+        }
+      }
+    },
+    {
+      "id": "W_VS_V",
+      "name": "W (/w/) vs V (/v/) Contrast",
+      "drill_sentence": "Victor signed the waiver for warm water near the west valley window while drinking wine from the vine.",
+      "rule": "Round your lips in an 'O' shape for W; touch upper teeth to lower lip for V.",
+      "words": {
+        "WAIVER": {"ipa": "/ˈweɪ.vər/", "note": "Starts with round lips /w/ and middle has teeth-on-lip /v/ (वेवर)।", "wrong": ["VAIVER", "WAIWER"]},
+        "WATER": {"ipa": "/ˈwɔː.tər/", "note": "Lips must be rounded for /w/ (वॉटर), do not bite your lip like /v/।", "wrong": ["VATER"]},
+        "WINDOW": {"ipa": "/ˈwɪn.doʊ/", "note": "Both start and end require rounded lips (विंडो)।", "wrong": ["VINDOW"]},
+        "WEST": {"ipa": "/wɛst/", "note": "Round lips /w/ (वेस्ट), not 'vest'।", "wrong": ["VEST"]},
+        "VEST": {"ipa": "/vɛst/", "note": "Upper teeth touch lower lip for /v/ (वेस्ट)।", "wrong": ["WEST"]},
+        "VALLEY": {"ipa": "/ˈvæl.i/", "note": "Upper teeth touch lower lip for /v/ (वैली)।", "wrong": ["WALLEY"]},
+        "VERY": {"ipa": "/ˈvɛr.i/", "note": "Vibration with teeth on bottom lip (वेरी)।", "wrong": ["WERI"]},
+        "WINE": {"ipa": "/waɪn/", "note": "Lips rounded for /w/ (वाइन - drink), do not bite lip।", "wrong": ["VINE"]},
+        "VINE": {"ipa": "/vaɪn/", "note": "Teeth on bottom lip for /v/ (वाइन - अंगूर की बेल)।", "wrong": ["WINE"]},
+        "WET": {"ipa": "/wɛt/", "note": "Round lips /w/ (वेट - गीला)।", "wrong": ["VET"]},
+        "VET": {"ipa": "/vɛt/", "note": "Teeth on lower lip for /v/ (वेट - डॉक्टर)।", "wrong": ["WET"]}
+      }
+    },
+    {
+      "id": "VOICED_Z",
+      "name": "Voiced S (/z/) & Plurals",
+      "drill_sentence": "These boys played games for several days because he has those keys and his eyes love busy music.",
+      "rule": "Letter 'S' vibrates as 'Z' (ज़) at the end of auxiliary verbs and after voiced sounds.",
+      "words": {
+        "IS": {"ipa": "/ɪz/", "note": "Must end with buzzing 'ज़' (/z/), never soft 'इस'।", "wrong": ["ISS"]},
+        "WAS": {"ipa": "/wɒz/", "note": "Must end with buzzing 'ज़' (/z/) (वॉज़)।", "wrong": ["WASS"]},
+        "HAS": {"ipa": "/hæz/", "note": "Ends in voiced /z/ (हैज़), not 'हैस'।", "wrong": ["HASS"]},
+        "BECAUSE": {"ipa": "/bɪˈkɒz/", "note": "Ending sound is /z/ (बिकॉज़)।", "wrong": ["BIKAAS"]},
+        "THESE": {"ipa": "/ðiːz/", "note": "Ends with vibrating /z/ (दीज़)।", "wrong": ["THEES"]},
+        "THOSE": {"ipa": "/ðoʊz/", "note": "Ends with vibrating /z/ (दोज़)।", "wrong": ["THOSS"]},
+        "BOYS": {"ipa": "/bɔɪz/", "note": "Plural after vowel takes vibrating /z/ (बॉयज़)।", "wrong": ["BOISS"]},
+        "DAYS": {"ipa": "/deɪz/", "note": "Plural after vowel takes vibrating /z/ (डेज़)।", "wrong": ["DAIS", "DAYSS"]},
+        "EYES": {"ipa": "/aɪz/", "note": "Ends in buzzing /z/ (आइज़), not 'आइस'।", "wrong": ["ICE", "AYES"]},
+        "MUSIC": {"ipa": "/ˈmjuː.zɪk/", "note": "'S' between vowels vibrates as 'ज़' (म्यूज़िक)।", "wrong": ["MYUSIK"]},
+        "BUSY": {"ipa": "/ˈbɪz.i/", "note": "'S' between vowels vibrates as 'ज़' (बिज़ी)।", "wrong": ["BISI"]}
+      }
+    },
+    {
+      "id": "SILENT_LETTERS",
+      "name": "Silent Consonants (L, B, P, K, D, G, H)",
+      "drill_sentence": "The calm plumber should walk calmly and talk about half of the salmon debt receipt on Wednesday with honest knowledge.",
+      "rule": "Do not articulate silent letters.",
+      "words": {
+        "CALM": {"ipa": "/kɑːm/", "note": "Letter 'L' is completely silent. Say 'काम', not 'कालम'।", "wrong": ["KALM", "CULM"], "silent_letter": true},
+        "WALK": {"ipa": "/wɔːk/", "note": "Letter 'L' is silent. Say 'वॉक'।", "wrong": ["WALK_L", "WOLK"], "silent_letter": true},
+        "TALK": {"ipa": "/tɔːk/", "note": "Letter 'L' is silent. Say 'टॉक'।", "wrong": ["TALK_L", "TOLK"], "silent_letter": true},
+        "HALF": {"ipa": "/hɑːf/", "note": "Letter 'L' is silent. Say 'हाफ़'।", "wrong": ["HALPH"], "silent_letter": true},
+        "SALMON": {"ipa": "/ˈsæm.ən/", "note": "Letter 'L' is silent. Say 'सैमन', not 'सैल्मन'।", "wrong": ["SALMON_L", "SELMON"], "silent_letter": true},
+        "ALMOND": {"ipa": "/ˈɑː.mənd/", "note": "Letter 'L' is silent. Say 'आमन्ड', 'आल्मन्ड' नहीं।", "wrong": ["ALMOND_L"], "silent_letter": true},
+        "DOUBT": {"ipa": "/daʊt/", "note": "Letter 'B' is silent. Say 'डाउट'।", "wrong": ["DOWBT"], "silent_letter": true},
+        "DEBT": {"ipa": "/dɛt/", "note": "Letter 'B' is silent. Say 'डेट'।", "wrong": ["DEBTE"], "silent_letter": true},
+        "PLUMBER": {"ipa": "/ˈplʌm.ər/", "note": "Letter 'B' is silent. Say 'प्लमर'।", "wrong": ["PLUMBER_B"], "silent_letter": true},
+        "CLIMB": {"ipa": "/klaɪm/", "note": "Letter 'B' is silent. Say 'क्लाइम', 'क्लाइम्ब' नहीं।", "wrong": ["KLIMB"], "silent_letter": true},
+        "THUMB": {"ipa": "/θʌm/", "note": "Letter 'B' is silent. Say 'थम', 'थम्ब' नहीं।", "wrong": ["THUMB_B"], "silent_letter": true},
+        "RECEIPT": {"ipa": "/rɪˈsiːt/", "note": "Letter 'P' is silent. Say 'रिसीट', never say 'रिसीप्ट'।", "wrong": ["RECEIPT_P"], "silent_letter": true},
+        "WEDNESDAY": {"ipa": "/ˈwɛnz.deɪ/", "note": "Letter 'D' is silent. Say 'वेन्ज़-डे'।", "wrong": ["WEDNESDAY_D"], "silent_letter": true},
+        "KNOWLEDGE": {"ipa": "/ˈnɒl.ɪdʒ/", "note": "Initial 'K' is silent. Say 'नॉलेज'।", "wrong": ["KNOWLEDGE_K"], "silent_letter": true},
+        "FOREIGN": {"ipa": "/ˈfɒr.ɪn/", "note": "Letter 'G' is silent. Say 'फ़ॉरिन'।", "wrong": ["FOREIGN_G"], "silent_letter": true},
+        "HONEST": {"ipa": "/ˈɒn.ɪst/", "note": "Letter 'H' is silent. Say 'ऑनेस्ट', 'हॉनेस्ट' नहीं।", "wrong": ["HONEST_H"], "silent_letter": true}
+      }
+    },
+    {
+      "id": "SH_AND_ZH",
+      "name": "SH (/ʃ/) & Soft ZH (/ʒ/)",
+      "drill_sentence": "It is a pleasure to watch the special action and measure the vision on the ship before making a decision.",
+      "rule": "-tion/-sion/-cial make /ʃ/ (तालव्य श); vowel + -sion/-sure make /ʒ/ (झ़ vibration).",
+      "words": {
+        "SHIP": {"ipa": "/ʃɪp/", "note": "Requires clear /ʃ/ (श), lips pushed forward.", "wrong": ["SIP"]},
+        "SPECIAL": {"ipa": "/ˈspɛʃ.əl/", "note": "'-cial' makes /ʃəl/ (स्पेशल), not 'स्पेसल'।", "wrong": ["SPESIAL"]},
+        "ACTION": {"ipa": "/ˈæk.ʃən/", "note": "'-tion' makes /ʃən/ (ऐक्शन), not 'ऐक्सन'।", "wrong": ["AKSAN"]},
+        "NATION": {"ipa": "/ˈneɪ.ʃən/", "note": "'-tion' makes /ʃən/ (नेशन), 'नेसन' नहीं।", "wrong": ["NASAN"]},
+        "VISION": {"ipa": "/ˈvɪʒ.ən/", "note": "Vowel + sion gives /ʒ/ sound (विज़न - soft 'झ़')।", "wrong": ["VIJAN", "VISAN"]},
+        "PLEASURE": {"ipa": "/ˈplɛʒ.ər/", "note": "'-sure' gives vibrating /ʒ/ sound (प्लेज़र - soft 'झ़')।", "wrong": ["PLEJAR"]},
+        "MEASURE": {"ipa": "/ˈmɛʒ.ər/", "note": "Vibrating soft sound (मेज़र), not hard 'मेजर'।", "wrong": ["MEJAR"]},
+        "DECISION": {"ipa": "/dɪˈsɪʒ.ən/", "note": "Vowel + sion = /ʒ/ (डिसिज़न - soft 'झ़')।", "wrong": ["DESIJAN"]}
+      }
+    },
+    {
+      "id": "VOWEL_JAW_TRAPS",
+      "name": "Short A (/æ/) vs Short E (/e/) & Magic-E",
+      "drill_sentence": "A tall man and ten men put a bad bat on the bed while one woman told all those women to see the mane.",
+      "rule": "/æ/ requires wide vertical mouth opening (jaw-drop); /e/ is half-open.",
+      "words": {
+        "MAN": {"ipa": "/mæn/", "note": "Wide mouth opening (मैन). Do not say 'मेन'।", "wrong": ["MEN", "MAIN"]},
+        "MEN": {"ipa": "/mɛn/", "note": "Half-open mouth (मेन). Do not say 'मैन'।", "wrong": ["MAN"]},
+        "BAT": {"ipa": "/bæt/", "note": "Short 'A' requires jaw drop (बैट), not 'बेट'।", "wrong": ["BET"]},
+        "BET": {"ipa": "/bɛt/", "note": "Short 'E' (बेट), not 'बैट'।", "wrong": ["BAT"]},
+        "PAN": {"ipa": "/pæn/", "note": "Say 'पैन', not 'पेन'।", "wrong": ["PEN"]},
+        "PEN": {"ipa": "/pɛn/", "note": "Say 'पेन', not 'पैन'।", "wrong": ["PAN"]},
+        "BAD": {"ipa": "/bæd/", "note": "Say 'बैड' (jaw drop), not 'बेड'।", "wrong": ["BED"]},
+        "BED": {"ipa": "/bɛd/", "note": "Say 'बेड' (half open), not 'बैड'।", "wrong": ["BAD"]},
+        "MANE": {"ipa": "/meɪn/", "note": "Magic-E makes long A sound (मेन / meyn)।", "wrong": ["MAN"]},
+        "WOMAN": {"ipa": "/ˈwʊm.ən/", "note": "Singular: Say 'वु-मन' (/ˈwʊm.ən/), not 'वो-मैन'।", "wrong": ["WOMEN"]},
+        "WOMEN": {"ipa": "/ˈwɪm.ɪn/", "note": "Plural: Say 'वि-मिन' (/ˈwɪm.ɪn/), never 'वु-मेन'।", "wrong": ["WOMAN"]}
+      }
+    },
+    {
+      "id": "J_VS_Z",
+      "name": "Hard J (/dʒ/) vs Buzzing Z (/z/) Contrast",
+      "drill_sentence": "The zealous boy was jealous when the zebra jumped inside the zoo for a new job.",
+      "rule": "J touches palate firmly (ज); Z has no tongue block, teeth close with buzzing air (ज़).",
+      "words": {
+        "JOB": {"ipa": "/dʒɒb/", "note": "Tongue tap for hard 'ज' (जॉब), do not say 'ज़ॉब'।", "wrong": ["ZOB"]},
+        "ZERO": {"ipa": "/ˈzɪə.roʊ/", "note": "Continuous buzzing 'ज़' (ज़ीरो), do not say hard 'जीरो'।", "wrong": ["JERO"]},
+        "JEALOUS": {"ipa": "/ˈdʒɛl.əs/", "note": "Firm 'ज' sound (जेलस), not 'ज़ेलस'।", "wrong": ["ZEALOUS"]},
+        "ZEALOUS": {"ipa": "/ˈzɛl.əs/", "note": "Buzzing 'ज़' sound (ज़ेलस), not 'जेलस'।", "wrong": ["JEALOUS"]},
+        "ZOO": {"ipa": "/zuː/", "note": "Buzzing 'ज़' (ज़ू), do not say hard 'जू'।", "wrong": ["JOO"]}
+      }
+    },
+    {
+      "id": "TH_SOUNDS",
+      "name": "Voiceless TH (/θ/) vs Voiced TH (/ð/)",
+      "drill_sentence": "My mother thinks that this thin cloth is smoother than that one.",
+      "rule": "Tongue between front teeth; air blow without vocal vibration (/θ/), with vibration (/ð/).",
+      "words": {
+        "THINK": {"ipa": "/θɪŋk/", "note": "Voiceless /θ/ (थ जैसी ध्वनि), do not say 'टिंक' (Tink)।", "wrong": ["TINK"]},
+        "THIN": {"ipa": "/θɪn/", "note": "Voiceless /θ/ (थिन), do not say 'टिन' (Tin)।", "wrong": ["TIN"]},
+        "THIS": {"ipa": "/ðɪs/", "note": "Voiced /ð/ (दिस), do not pronounce as hard Hindi 'दिस' (Dis)।", "wrong": ["DIS"]},
+        "THAT": {"ipa": "/ðæt/", "note": "Voiced /ð/ (दैट), tongue between teeth, not hard 'डैट'।", "wrong": ["DAT"]},
+        "MOTHER": {"ipa": "/ˈmʌð.ər/", "note": "Soft voiced TH (मदर), do not say 'मद्दर' या 'मोडर'।", "wrong": ["MODER"]}
+      }
+    },
+    {
+      "id": "SOFT_HARD_C_G",
+      "name": "Soft C (/s/), Hard C (/k/), Soft G (/dʒ/), Hard G (/ɡ/)",
+      "drill_sentence": "The giant giraffe rode a cycle to the city gym in a circle.",
+      "rule": "C/G followed by E, I, Y becomes Soft (/s/, /dʒ/); followed by A, O, U becomes Hard (/k/, /ɡ/).",
+      "words": {
+        "CITY": {"ipa": "/ˈsɪt.i/", "note": "C before I is soft /s/ (सिटी), not 'किटी'।", "wrong": ["KITY"]},
+        "CIRCLE": {"ipa": "/ˈsɜːr.kəl/", "note": "First C is /s/, second C before L is /k/ (सर्कल)।", "wrong": ["KIRKLE"]},
+        "CYCLE": {"ipa": "/ˈsaɪ.kəl/", "note": "First C before Y is /s/, second is /k/ (साइकिल)।", "wrong": ["KAIKLE"]},
+        "GIRAFFE": {"ipa": "/dʒɪˈrɑːf/", "note": "G before I is soft /dʒ/ (जिराफ़), 'गिराफ़' नहीं।", "wrong": ["GIRAFFE_HARD"]},
+        "GYM": {"ipa": "/dʒɪm/", "note": "G before Y is soft /dʒ/ (जिम), 'गिम' नहीं।", "wrong": ["GIM"]},
+        "GIANT": {"ipa": "/ˈdʒaɪ.ənt/", "note": "G before I is soft /dʒ/ (जायंट), 'गायंट' नहीं।", "wrong": ["GIANT_HARD"]}
+      }
+    },
+    {
+      "id": "CORPORATE_BPO_TRAPS",
+      "name": "High-Frequency Corporate & Interview Words",
+      "drill_sentence": "Our executive scheduled a comfortable development meeting on Wednesday to improve pronunciation and environment.",
+      "rule": "Strict syllable stress and elimination of regional accent distortion.",
+      "words": {
+        "PRONUNCIATION": {"ipa": "/prəˌnʌn.siˈeɪ.ʃən/", "note": "Say 'प्र-नन-सी-एशन', do not say 'प्रो-नाउन-सिएशन'।", "wrong": ["PRONOUNCIATION"]},
+        "ENVIRONMENT": {"ipa": "/ɪnˈvaɪ.rən.mənt/", "note": "Say 'इन-वाइ-रन-मन्ट', do not drop the N ('इन्वारमेंट')।", "wrong": ["ENVIROMENT"]},
+        "DEVELOPMENT": {"ipa": "/dɪˈvɛl.əp.mənt/", "note": "Stress on 'VEL' (डि-वेलप-मन्ट), do not say 'डेव्लपमेंट'।", "wrong": ["DEVLOPMENT"]},
+        "COMFORTABLE": {"ipa": "/ˈkʌm.fət.ə.bəl/", "note": "Say 'कम्फ़-टबल', do not say 'कम्फर्ट-एबल'।", "wrong": ["COMFORTABLE_SPLIT"]},
+        "VEGETABLE": {"ipa": "/ˈvɛdʒ.tə.bəl/", "note": "Say 'वेज-टबल', do not say 'वेजी-टेबल'।", "wrong": ["VEGETABLE_SPLIT"]},
+        "EXECUTIVE": {"ipa": "/ɪɡˈzɛk.jʊ.tɪv/", "note": "Say 'इग्ज़ेक्युटिव', do not say 'एक्ज़ीक्यूटिव'।", "wrong": ["EXECUTIVE_WRONG"]},
+        "SCHEDULED": {"ipa": "/ˈʃɛd.juːld/", "note": "British English mein 'शेड्यूल्ड' (/ˈʃɛd.juːld/) bolein, American 'स्केड्यूल्ड' (/ˈskɛdʒ.uːld/) nahi।", "wrong": ["SKEDULED", "SEDULED"]}
+      }
+    },
+    {
+      "id": "SHORT_I_VS_LONG_EE",
+      "name": "Short /ɪ/ vs Long /iː/ Contrast",
+      "drill_sentence": "Please sit on this seat and watch the ship and the sheep.",
+      "rule": "Short /ɪ/ is quick and relaxed; Long /iː/ is stretched with lips smiling.",
+      "words": {
+        "SIT": {"ipa": "/sɪt/", "note": "Short relaxed vowel (सिट), do not stretch into 'सीट'।", "wrong": ["SEAT"]},
+        "SEAT": {"ipa": "/siːt/", "note": "Long smiling vowel (सीट), do not shorten into 'सिट'।", "wrong": ["SIT"]},
+        "SHIP": {"ipa": "/ʃɪp/", "note": "Short vowel (शिप), do not say 'शीप' (भेड़)।", "wrong": ["SHEEP"]},
+        "SHEEP": {"ipa": "/ʃiːp/", "note": "Long vowel (शीप), do not say 'शिप'।", "wrong": ["SHIP"]}
+      }
+    },
+    {
+      "id": "ARTICLES_A_AND_THE",
+      "name": "Articles Pronunciation ('A' & 'THE' Rules)",
+      "drill_sentence": "The apple was eaten by a boy on the street near the end of a long day.",
+      "rule": "सिंगल 'A' को हमेशा श्वा स्वर 'अ' (/ə/) पढ़ें, 'ए' नहीं। 'THE' के आगे स्वर (vowel) ध्वनि हो तो 'दी' (/ðiː/) और व्यंजन (consonant) हो तो 'द' (/ðə/) पढ़ें।",
+      "words": {
+        "A": {
+          "ipa": "/ə/",
+          "note": "जब 'A' वाक्य में अकेला आए, तो हल्का 'अ' (/ə/) बोलें (e.g. 'a boy')।",
+          "wrong": ["AY", "EI"]
+        },
+        "THE": {
+          "ipa": "/ðə/ or /ðiː/",
+          "note": "Consonant से पहले 'द' (/ðə/) और Vowel से पहले 'दी' (/ðiː/) बोलें।",
+          "wrong": ["DE", "DA"]
+        }
+      }
+    },
+    {
+      "id": "PREPOSITIONS_AND_AUXILIARIES",
+      "name": "Prepositions & Common Function Words (Were, Was, Of, To, On, And, From)",
+      "drill_sentence": "They were on the train with a bag of apples and walked from home to the station while it was raining.",
+      "rule": "छोटे शब्दों के उच्चारण में वाउल और अंतिम कॉन्सोनेंट को शुद्ध रखें।",
+      "words": {
+        "WERE": {
+          "ipa": "/wɜːr/",
+          "note": "होंठ गोल करके केवल 'वर' (/wɜːr/) बोलें, 'वेयर' (Where) नहीं।",
+          "wrong": ["WHERE", "WEAR", "WARE", "VER", "VARE"]
+        },
+        "WAS": {
+          "ipa": "/wɒz/",
+          "note": "अंत में 'स' नहीं, गले में कम्पन के साथ 'वॉज़' (/wɒz/) बोलें।",
+          "wrong": ["WASS", "VAS", "VASS"]
+        },
+        "OF": {
+          "ipa": "/ɒv/",
+          "note": "अंत में 'फ़' (Off) नहीं, 'ऑव' (/ɒv/) बोला जाता है।",
+          "wrong": ["OFF", "OPP"]
+        },
+        "ON": {
+          "ipa": "/ɒn/",
+          "note": "इसे 'ओन' (Own) न बोलें। मुँह खोलकर 'ऑन' (/ɒn/) बोलें।",
+          "wrong": ["OWN", "ONE", "OAN"]
+        },
+        "AND": {
+          "ipa": "/ænd/",
+          "note": "जबड़ा नीचे गिराकर 'ऐन्ड' (/ænd/) बोलें, 'एन्ड' नहीं।",
+          "wrong": ["END", "ENT"]
+        },
+        "TO": {
+          "ipa": "/tuː/ or /tə/",
+          "note": "इसे 'टो' (Toe) न बोलें। हल्का 'टु' (/tuː/) बोलें।",
+          "wrong": ["TOE", "TOW", "TAW"]
+        },
+        "FROM": {
+          "ipa": "/frɒm/",
+          "note": "'प्रॉम' या 'फ्राम' न बोलें। 'फ़्रॉम' (/frɒm/) बोलें।",
+          "wrong": ["PROM", "FRAM", "FRUM"]
+        },
+        "WITH": {
+          "ipa": "/wɪð/",
+          "note": "शुरुआत होंठ गोल करके करें (विद)। 'विट' (Wit) न बोलें।",
+          "wrong": ["WIT", "VITH", "VIT"]
+        }
+      }
+    }
+  ]
+}
