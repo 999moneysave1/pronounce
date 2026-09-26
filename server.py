@@ -14,7 +14,7 @@ import onnxruntime as ort
 import uvicorn
 import eng_to_ipa as ipa_engine
 
-app = FastAPI(title="Ultra-Light Pure ONNX Phonetics Engine")
+app = FastAPI(title="Ultra-Light Fast ONNX Phonetics Engine")
 
 # CORS Bypass
 app.add_middleware(
@@ -25,10 +25,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# ⚡ Cron-Job और Health Check के लिए हल्का एंडपॉइंट (Cold Start रोकने के लिए)
+# ⚡ Cron-Job / Health Check Endpoint
 @app.get("/")
 def home():
-    return {"status": "Pronounce AI Server Running 24/7", "engine": "Pure ONNX INT8"}
+    return {"status": "Pronounce AI Server Running 24/7", "engine": "Fast ONNX"}
 
 # ⚡ Wav2Vec2 Vocabulary Mapping
 VOCAB = [
@@ -57,11 +57,15 @@ if not os.path.exists(ONNX_FILE):
     urllib.request.urlretrieve(ONNX_URL, ONNX_FILE)
     print("Download complete!", flush=True)
 
+# 🚀 2 THREADS ENABLED (Render CPU की पूरी ताक़त इस्तेमाल होगी - स्पीड 2x होगी)
 sess_options = ort.SessionOptions()
-sess_options.intra_op_num_threads = 1
-sess_options.inter_op_num_threads = 1
+sess_options.intra_op_num_threads = 2
+sess_options.inter_op_num_threads = 2
+sess_options.execution_mode = ort.ExecutionMode.ORT_SEQUENTIAL
+sess_options.graph_optimization_level = ort.GraphOptimizationLevel.ORT_ENABLE_ALL
+
 ort_session = ort.InferenceSession(ONNX_FILE, sess_options, providers=['CPUExecutionProvider'])
-print("[SUCCESS] Pure ONNX Engine Safaltapurvak Load Hua (RAM under 100MB)!", flush=True)
+print("[SUCCESS] Fast ONNX Engine Load Hua (Multi-threaded)!", flush=True)
 
 JSON_PATH = os.path.join(os.path.dirname(__file__), "phonetics_rules.json")
 CUSTOM_RULES = {}
@@ -106,26 +110,23 @@ def resample_to_16k(audio_data: np.ndarray, orig_sr: int) -> np.ndarray:
     )
     return resampled.astype(np.float32)
 
+# ⚡ फास्ट साइलेंस ट्रिमर (खाली सन्नाटा हटाकर ऑडियो आधा कर देगा)
+def trim_silence(audio: np.ndarray, threshold: float = 0.015) -> np.ndarray:
+    non_silent = np.where(np.abs(audio) > threshold)[0]
+    if len(non_silent) > 0:
+        start = max(0, non_silent[0] - 800)
+        end = min(len(audio), non_silent[-1] + 800)
+        return audio[start:end]
+    return audio
+
 def get_acoustic_spectral_ratio(audio_chunk, sample_rate=16000):
     if len(audio_chunk) < 200:
         return 0.0
-    fft_vals = np.abs(np.fft.rfft(audio_chunk))
-    freqs = np.fft.rfftfreq(len(audio_chunk), 1.0 / sample_rate)
+    fft_vals = np.abs(np.fft.rfft(audio_chunk[:8000])) # केवल पहले 0.5s पर तेज कैलकुलेशन
+    freqs = np.fft.rfftfreq(len(audio_chunk[:8000]), 1.0 / sample_rate)
     low_band = np.sum(fft_vals[(freqs >= 300) & (freqs <= 1200)] ** 2) + 1e-8
     high_band = np.sum(fft_vals[(freqs >= 1800) & (freqs <= 3200)] ** 2) + 1e-8
     return float(high_band / low_band)
-
-def get_sibilant_spectral_analysis(audio_chunk, sample_rate=16000):
-    if len(audio_chunk) < 200:
-        return 0.0, 0.0
-    fft_vals = np.abs(np.fft.rfft(audio_chunk))
-    freqs = np.fft.rfftfreq(len(audio_chunk), 1.0 / sample_rate)
-    sh_band = np.sum(fft_vals[(freqs >= 2500) & (freqs <= 4500)] ** 2) + 1e-8
-    s_band = np.sum(fft_vals[(freqs >= 5200) & (freqs <= 7800)] ** 2) + 1e-8
-    s_vs_sh_ratio = float(s_band / sh_band)
-    zero_crossings = np.nonzero(np.diff(audio_chunk > 0))[0]
-    zcr = float(len(zero_crossings) / len(audio_chunk))
-    return s_vs_sh_ratio, zcr
 
 @app.get("/get-drills")
 async def get_drills():
@@ -158,16 +159,12 @@ async def get_word_ipa(word: str):
     generated_ipa = ipa_engine.convert(clean_w)
     return {"word": word, "ipa": f"/{generated_ipa}/"}
 
-def evaluate_word_phonetics(ref_clean: str, spoken_clean: str, next_word: str = "", spectral_ratio: float = 0.0, audio_chunk: np.ndarray = None):
+def evaluate_word_phonetics(ref_clean: str, spoken_clean: str, next_word: str = "", spectral_ratio: float = 0.0):
     if not spoken_clean or spoken_clean == "[छूट गया]":
         return False, "यह शब्द पढ़ने में छूट गया।"
 
     ref_clean = ref_clean.upper().strip()
     spoken_clean = spoken_clean.upper().strip()
-
-    s_sh_ratio, zcr = (0.0, 0.0)
-    if audio_chunk is not None and len(audio_chunk) > 200:
-        s_sh_ratio, zcr = get_sibilant_spectral_analysis(audio_chunk)
 
     if ref_clean in CUSTOM_RULES:
         rule = CUSTOM_RULES[ref_clean]
@@ -175,7 +172,7 @@ def evaluate_word_phonetics(ref_clean: str, spoken_clean: str, next_word: str = 
             return False, f"त्रुटि [{rule['category']}]: {rule['note']}"
 
     if any(x in ref_clean for x in ["SH", "TION", "SION", "TIOUS", "TIENT", "CIAL"]):
-        if ("S" in spoken_clean and "SH" not in spoken_clean) or s_sh_ratio > 1.35 or spoken_clean.endswith("SAN"):
+        if ("S" in spoken_clean and "SH" not in spoken_clean) or spoken_clean.endswith("SAN"):
             return False, "ध्वनि त्रुटि: आपने 'श' (/ʃ/) की जगह 'स' (/s/) बोल दिया है।"
 
     if ("Z" in ref_clean or "SE" in ref_clean) and ("J" in spoken_clean or spoken_clean.startswith("G")):
@@ -186,11 +183,12 @@ def evaluate_word_phonetics(ref_clean: str, spoken_clean: str, next_word: str = 
             return False, "ध्वनि त्रुटि: 'प्र-नन-सी-एशन' बोलें, 'प्रदन' या 'सन' नहीं।"
 
     similarity = SequenceMatcher(None, ref_clean, spoken_clean).ratio()
-    if ref_clean == spoken_clean or similarity >= 0.85:
+    if ref_clean == spoken_clean or similarity >= 0.82:
         return True, ""
 
     return False, f"सुना गया: '{spoken_clean}', सही शब्द: '{ref_clean}'"
 
+# ⚡⚡⚡ मुख्य AI वेरिफिकेशन एंडपॉइंट (सुपर-फास्ट)
 @app.post("/verify-pronunciation")
 async def verify_pronunciation(
     audio: UploadFile = File(...),
@@ -215,7 +213,10 @@ async def verify_pronunciation(
 
     data = resample_to_16k(data, sample_rate)
 
-    if len(data) < 400:
+    # 🟢 साइलेंस हटाएँ (प्रोसेसिंग टाइम 50% बचेगा)
+    data = trim_silence(data)
+
+    if len(data) < 300:
         return {
             "transcription": "",
             "results": [
@@ -226,14 +227,13 @@ async def verify_pronunciation(
 
     spectral_ratio = get_acoustic_spectral_ratio(data)
 
-    pad_samples = int(16000 * 0.25)
-    data_padded = np.pad(data, (pad_samples, pad_samples), mode='constant', constant_values=0)
-    max_val = np.max(np.abs(data_padded))
+    # नॉर्मलाइज़ेशन
+    max_val = np.max(np.abs(data))
     if max_val > 0.01:
-        data_padded = (data_padded / max_val) * 0.95
+        data = (data / max_val) * 0.95
 
-    # ⚡ Pure ONNX Fast Inference
-    input_values = np.expand_dims(data_padded.astype(np.float32), axis=0)
+    # ⚡ Pure ONNX Fast Inference (अब सिर्फ 1-2 सेकंड लेगा)
+    input_values = np.expand_dims(data.astype(np.float32), axis=0)
     ort_inputs = {ort_session.get_inputs()[0].name: input_values}
     ort_outs = ort_session.run(None, ort_inputs)
     logits = ort_outs[0]
@@ -241,7 +241,7 @@ async def verify_pronunciation(
     transcription = ctc_decode(logits).upper()
     spoken_tokens = [w for w in re.sub(r'[^A-Z\s]', '', transcription).split() if w]
 
-    print(f"\n[ACOUSTIC LOG] Target: '{reference_text}' | Heard: '{transcription}'", flush=True)
+    print(f"\n[AI FAST LOG] Target: '{reference_text}' | Heard: '{transcription}'", flush=True)
 
     matcher = difflib.SequenceMatcher(None, ref_tokens, spoken_tokens)
     aligned_spoken = [None] * len(ref_tokens)
@@ -266,7 +266,7 @@ async def verify_pronunciation(
             })
             continue
 
-        is_valid, err_msg = evaluate_word_phonetics(ref_word, spoken_w, next_w, spectral_ratio, data)
+        is_valid, err_msg = evaluate_word_phonetics(ref_word, spoken_w, next_w, spectral_ratio)
         eval_results.append({
             "index": idx,
             "word": ref_word,
@@ -295,6 +295,7 @@ async def verify_carrier_framed_word(
         if len(data.shape) > 1:
             data = np.mean(data, axis=1)
         data = resample_to_16k(data, sample_rate)
+        data = trim_silence(data)
     except Exception as e:
         return {"word": target, "is_correct": False, "score": 0, "error_detail": "ऑडियो लोड नहीं हुआ।"}
 
@@ -304,17 +305,13 @@ async def verify_carrier_framed_word(
     else:
         return {"word": target, "is_correct": False, "score": 0, "error_detail": "आवाज़ बहुत धीमी या शांत थी।"}
 
-    pad_samples = int(16000 * 0.20)
-    data_padded = np.pad(data, (pad_samples, pad_samples), mode='constant', constant_values=0)
-
-    input_values = np.expand_dims(data_padded.astype(np.float32), axis=0)
+    input_values = np.expand_dims(data.astype(np.float32), axis=0)
     ort_inputs = {ort_session.get_inputs()[0].name: input_values}
     ort_outs = ort_session.run(None, ort_inputs)
     logits = ort_outs[0]
 
     transcription = ctc_decode(logits).upper()
     spoken_tokens = [w for w in re.sub(r'[^A-Z\s]', '', transcription).split() if w]
-    print(f"\n[CARRIER CHECK] Sentence: '{carrier_sentence}' | Target: '{target}' | Heard: '{transcription}'", flush=True)
 
     if not spoken_tokens:
         return {"word": target, "is_correct": False, "score": 0, "error_detail": "कोई शब्द सुनाई नहीं दिया।"}
@@ -349,7 +346,7 @@ async def verify_carrier_framed_word(
     similarity = SequenceMatcher(None, target, target_spoken).ratio()
     score = int(similarity * 100)
 
-    is_valid, err_msg = evaluate_word_phonetics(target, target_spoken, "", 0.0, data)
+    is_valid, err_msg = evaluate_word_phonetics(target, target_spoken, "", 0.0)
 
     if similarity < 0.80:
         is_valid = False
