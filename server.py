@@ -16,6 +16,7 @@ import eng_to_ipa as ipa_engine
 
 app = FastAPI(title="Ultra-Light Pure ONNX Phonetics Engine")
 
+# CORS Bypass
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -24,7 +25,12 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# ⚡ Wav2Vec2 Vocabulary Mapping (बिना transformers के सीधा CTC डिकोडिंग)
+# ⚡ Cron-Job और Health Check के लिए हल्का एंडपॉइंट (Cold Start रोकने के लिए)
+@app.get("/")
+def home():
+    return {"status": "Pronounce AI Server Running 24/7", "engine": "Pure ONNX INT8"}
+
+# ⚡ Wav2Vec2 Vocabulary Mapping
 VOCAB = [
     "<pad>", "<s>", "</s>", "<unk>", "|", "E", "T", "A", "O", "N", "I", "H", "S", 
     "R", "D", "L", "U", "M", "W", "C", "F", "G", "Y", "P", "B", "V", "K", "'", "X", "J", "Q", "Z"
@@ -42,7 +48,7 @@ def ctc_decode(predictions):
         prev_id = p
     return "".join(decoded_chars).strip()
 
-# ⚡ Direct Lightweight ONNX Model Download (~95MB)
+# ⚡ Pre-quantized Ultra-Light ONNX (~95MB)
 ONNX_FILE = os.path.join(os.path.dirname(__file__), "wav2vec2_model.onnx")
 ONNX_URL = "https://huggingface.co/Xenova/wav2vec2-base-960h/resolve/main/onnx/model_quantized.onnx"
 
@@ -220,13 +226,13 @@ async def verify_pronunciation(
 
     spectral_ratio = get_acoustic_spectral_ratio(data)
 
-    pad_samples = int(16000 * 0.3)
+    pad_samples = int(16000 * 0.25)
     data_padded = np.pad(data, (pad_samples, pad_samples), mode='constant', constant_values=0)
     max_val = np.max(np.abs(data_padded))
     if max_val > 0.01:
         data_padded = (data_padded / max_val) * 0.95
 
-    # ⚡ Pure ONNX Inference (No transformers overhead)
+    # ⚡ Pure ONNX Fast Inference
     input_values = np.expand_dims(data_padded.astype(np.float32), axis=0)
     ort_inputs = {ort_session.get_inputs()[0].name: input_values}
     ort_outs = ort_session.run(None, ort_inputs)
@@ -298,7 +304,7 @@ async def verify_carrier_framed_word(
     else:
         return {"word": target, "is_correct": False, "score": 0, "error_detail": "आवाज़ बहुत धीमी या शांत थी।"}
 
-    pad_samples = int(16000 * 0.25)
+    pad_samples = int(16000 * 0.20)
     data_padded = np.pad(data, (pad_samples, pad_samples), mode='constant', constant_values=0)
 
     input_values = np.expand_dims(data_padded.astype(np.float32), axis=0)
